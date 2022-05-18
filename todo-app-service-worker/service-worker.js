@@ -14,8 +14,7 @@ self.addEventListener('activate', (event) => {
     console.log('Activated service worker at ', new Date().toLocaleTimeString());
 });
 
-self.addEventListener('fetch', (event) => {
- // Vi återkommer till detta nästa vecka
+self.addEventListener('fetch', async (event) => {
     console.log(event.request.url);
     if (!navigator.onLine) { // Kolla om vi har internet eller ej, ger tillbaka true/false
         console.log('Offline');
@@ -31,5 +30,16 @@ self.addEventListener('fetch', (event) => {
         );
     } else {
         console.log('Online');
+        const response = await updateCache(event.request);
+        return response;
     }
 });
+
+async function updateCache(request) {
+    const response = await fetch(request);
+    const cache = await caches.open('v1');
+
+    cache.put(request, response.clone());
+
+    return response;
+}
